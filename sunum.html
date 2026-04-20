@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Artis Flood Simulator — Project Breakdown</title>
+  <meta name="description" content="A clear breakdown of the Artis / Plantage Middenlaan flood risk simulation — data sources, methodology, interventions, and design logic.">
+  <meta property="og:title" content="Artis Flood Simulator — Project Breakdown">
+  <meta property="og:description" content="How we built it, what the data says, and why each decision was made.">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%230d1b2a'/><path d='M4 22 Q8 14 12 22 Q16 30 20 22 Q24 14 28 22' fill='none' stroke='%2300bcd4' stroke-width='2.5' stroke-linecap='round'/></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;1,9..144,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --navy:   #0d1b2a;
+      --navy2:  #112233;
+      --ink:    #1a2e42;
+      --cream:  #f5f0e8;
+      --paper:  #faf8f4;
+      --white:  #ffffff;
+      --mid:    #4a6274;
+      --lo:     #8aa5b5;
+      --cyan:   #00bcd4;
+      --good:   #22c55e;
+      --warn:   #f97316;
+      --red:    #ef4444;
+      --amber:  #f59e0b;
+      --purple: #8b5cf6;
+      --border: rgba(0,0,0,.08);
+      --serif:  'Fraunces', Georgia, serif;
+      --sans:   'DM Sans', system-ui, sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: var(--sans); background: var(--paper); color: var(--navy); line-height: 1.7; }
+
+    /* ── HERO ─── */
+    .hero {
+      background: var(--navy);
+      color: var(--cream);
+      padding: 80px 24px 72px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 60% 50% at 80% 20%, rgba(0,188,212,.10), transparent),
+        radial-gradient(ellipse 40% 60% at 10% 80%, rgba(139,92,246,.08), transparent);
+      pointer-events: none;
+    }
+    .hero-inner { max-width: 860px; margin: 0 auto; position: relative; }
+    .hero-tag {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 11px; letter-spacing: .18em; text-transform: uppercase;
+      color: var(--cyan); margin-bottom: 24px;
+      font-family: 'DM Sans', monospace;
+    }
+    .hero-tag::before {
+      content: ''; display: block; width: 24px; height: 1px; background: var(--cyan);
+    }
+    .hero h1 {
+      font-family: var(--serif);
+      font-size: clamp(36px, 6vw, 64px);
+      font-weight: 600;
+      letter-spacing: -.02em;
+      line-height: 1.08;
+      margin-bottom: 22px;
+    }
+    .hero h1 em { font-style: italic; color: var(--cyan); }
+    .hero-sub {
+      font-size: 17px; color: rgba(245,240,232,.65); line-height: 1.65;
+      max-width: 600px; margin-bottom: 48px;
+    }
+    .hero-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 1px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .hstat {
+      padding: 20px 18px;
+      background: rgba(255,255,255,.03);
+    }
+    .hstat-n {
+      font-family: var(--serif);
+      font-size: 36px; font-weight: 600; line-height: 1;
+      letter-spacing: -.03em; margin-bottom: 5px;
+    }
+    .hstat-l { font-size: 11px; color: rgba(245,240,232,.45); letter-spacing: .05em; text-transform: uppercase; }
+    .hstat-n.c { color: var(--red); }
+    .hstat-n.w { color: var(--warn); }
+    .hstat-n.g { color: var(--good); }
+    .hstat-n.p { color: var(--purple); }
+
+    /* ── NAV ─── */
+    nav {
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      position: sticky; top: 0; z-index: 100;
+      backdrop-filter: blur(12px);
+    }
+    .nav-inner {
+      max-width: 860px; margin: 0 auto;
+      display: flex; align-items: center; gap: 0; overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .nav-inner::-webkit-scrollbar { display: none; }
+    .nav-inner a {
+      display: block; padding: 16px 16px;
+      font-size: 12px; font-weight: 500; letter-spacing: .04em;
+      color: var(--lo); text-decoration: none; white-space: nowrap;
+      border-bottom: 2px solid transparent;
+      transition: color .15s, border-color .15s;
+    }
+    .nav-inner a:hover { color: var(--navy); border-color: var(--cyan); }
+
+    /* ── SECTIONS ─── */
+    .section { padding: 72px 24px; }
+    .section-inner { max-width: 860px; margin: 0 auto; }
+    .section.alt { background: var(--cream); }
+    .section.dark { background: var(--navy2); color: var(--cream); }
+
+    .sec-tag {
+      font-size: 10.5px; letter-spacing: .18em; text-transform: uppercase;
+      color: var(--cyan); margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
+    }
+    .sec-tag::before { content: ''; display: block; width: 18px; height: 1px; background: var(--cyan); }
+    h2 {
+      font-family: var(--serif);
+      font-size: clamp(26px, 4vw, 40px);
+      font-weight: 600; letter-spacing: -.025em; line-height: 1.15;
+      margin-bottom: 16px;
+    }
+    .section.dark h2 { color: var(--cream); }
+    .lead {
+      font-size: 17px; color: var(--mid); line-height: 1.7;
+      max-width: 680px; margin-bottom: 48px;
+    }
+    .section.dark .lead { color: rgba(245,240,232,.6); }
+
+    /* ── DATA CARDS ─── */
+    .data-cards { display: flex; flex-direction: column; gap: 28px; }
+    .dcard {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .dcard-head {
+      display: flex; align-items: center; gap: 16px;
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+    }
+    .dcard-num {
+      width: 36px; height: 36px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--serif); font-size: 18px; font-weight: 600;
+      flex-shrink: 0;
+    }
+    .dcard-num.r { background: rgba(239,68,68,.1); color: var(--red); }
+    .dcard-num.o { background: rgba(249,115,22,.1); color: var(--warn); }
+    .dcard-num.b { background: rgba(0,188,212,.1); color: var(--cyan); }
+    .dcard-title { font-size: 14px; font-weight: 600; color: var(--navy); line-height: 1.3; }
+    .dcard-sub { font-size: 11.5px; color: var(--lo); margin-top: 2px; }
+    .dcard-body { padding: 20px 24px; }
+    .dcard-body p { font-size: 14px; color: var(--mid); line-height: 1.65; margin-bottom: 14px; }
+    .dcard-body p:last-child { margin-bottom: 0; }
+    .dcard-body strong { color: var(--navy); font-weight: 600; }
+
+    .fact-row {
+      display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px;
+    }
+    .fact {
+      display: flex; align-items: center; gap: 7px;
+      background: var(--paper); border: 1px solid var(--border);
+      border-radius: 6px; padding: 7px 11px;
+      font-size: 12px; color: var(--mid);
+    }
+    .fact strong { color: var(--navy); font-weight: 600; }
+    .fact-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+
+    /* ── MAP LEGEND ─── */
+    .map-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 600px) { .map-grid { grid-template-columns: 1fr; } }
+    .mcard {
+      border: 1px solid var(--border);
+      border-radius: 10px; padding: 18px;
+      background: var(--white);
+    }
+    .mcard-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .mcard-icon {
+      width: 28px; height: 28px; border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; flex-shrink: 0;
+    }
+    .mcard-title { font-size: 13px; font-weight: 600; color: var(--navy); }
+    .mcard p { font-size: 12.5px; color: var(--mid); line-height: 1.6; }
+
+    /* ── BOTTLENECKS ─── */
+    .bn-list { display: flex; flex-direction: column; gap: 20px; }
+    .bn {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: 12px; overflow: hidden;
+    }
+    .bn-head {
+      display: grid; grid-template-columns: 1fr auto;
+      align-items: center; gap: 16px;
+      padding: 18px 20px; border-bottom: 1px solid var(--border);
+    }
+    .bn-name { font-size: 15px; font-weight: 600; color: var(--navy); }
+    .bn-tag {
+      font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+      padding: 3px 9px; border-radius: 20px;
+    }
+    .bn-tag.critical { background: rgba(239,68,68,.1); color: var(--red); }
+    .bn-tag.high     { background: rgba(249,115,22,.1); color: var(--warn); }
+    .bn-tag.elevated { background: rgba(245,158,11,.1); color: var(--amber); }
+    .bn-body { padding: 16px 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 580px) { .bn-body { grid-template-columns: 1fr; } }
+    .bn-col-label { font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--lo); margin-bottom: 6px; }
+    .bn-col p { font-size: 12.5px; color: var(--mid); line-height: 1.6; }
+    .bn-col p strong { color: var(--navy); }
+    .sev-bar-wrap { height: 5px; background: var(--paper); border-radius: 3px; margin: 10px 0 4px; overflow: hidden; }
+    .sev-bar { height: 100%; border-radius: 3px; }
+    .sev-pct { font-size: 11px; color: var(--lo); }
+
+    /* ── SOLUTIONS ─── */
+    .sol-grid { display: grid; grid-template-columns: 1fr; gap: 24px; }
+    .sol {
+      border-radius: 12px; overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .sol-head { padding: 22px 24px; }
+    .sol-type { font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; margin-bottom: 8px; font-weight: 600; }
+    .sol-name { font-family: var(--serif); font-size: 22px; font-weight: 600; line-height: 1.2; margin-bottom: 10px; }
+    .sol-desc { font-size: 13.5px; line-height: 1.65; }
+    .sol-metrics {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      border-top: 1px solid var(--border);
+    }
+    .sol-metric {
+      padding: 14px 16px;
+      border-right: 1px solid var(--border);
+      text-align: center;
+    }
+    .sol-metric:last-child { border-right: none; }
+    .sol-metric-n { font-family: var(--serif); font-size: 22px; font-weight: 600; line-height: 1; margin-bottom: 4px; }
+    .sol-metric-l { font-size: 10px; color: var(--lo); text-transform: uppercase; letter-spacing: .06em; }
+
+    /* Helophyte — green */
+    .sol.helo .sol-head { background: #f0fdf4; }
+    .sol.helo .sol-type { color: #16a34a; }
+    .sol.helo .sol-name { color: #14532d; }
+    .sol.helo .sol-desc { color: #166534; }
+    .sol.helo .sol-metric-n { color: #16a34a; }
+
+    /* BlueBloqs — purple */
+    .sol.bb .sol-head { background: #faf5ff; }
+    .sol.bb .sol-type { color: #7c3aed; }
+    .sol.bb .sol-name { color: #4c1d95; }
+    .sol.bb .sol-desc { color: #5b21b6; }
+    .sol.bb .sol-metric-n { color: #7c3aed; }
+
+    /* 3rd filter — amber */
+    .sol.f3 .sol-head { background: #fffbeb; }
+    .sol.f3 .sol-type { color: #d97706; }
+    .sol.f3 .sol-name { color: #78350f; }
+    .sol.f3 .sol-desc { color: #92400e; }
+    .sol.f3 .sol-metric-n { color: #d97706; }
+
+    /* ── ARCHITECTURE ─── */
+    .arch-layers { display: flex; flex-direction: column; gap: 3px; margin: 32px 0; }
+    .arch-layer {
+      display: grid; grid-template-columns: 120px 1fr;
+      gap: 0; border-radius: 8px; overflow: hidden;
+    }
+    .arch-layer-label {
+      padding: 14px 16px;
+      font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+      display: flex; align-items: center;
+    }
+    .arch-layer-text {
+      padding: 14px 18px;
+      font-size: 13px; line-height: 1.55;
+    }
+    .arch-layer.micro .arch-layer-label { background: rgba(34,197,94,.15); color: #15803d; }
+    .arch-layer.micro .arch-layer-text  { background: rgba(34,197,94,.06); color: #166534; }
+    .arch-layer.peak  .arch-layer-label { background: rgba(0,188,212,.15); color: #0e7490; }
+    .arch-layer.peak  .arch-layer-text  { background: rgba(0,188,212,.06); color: #155e75; }
+    .arch-layer.store .arch-layer-label { background: rgba(139,92,246,.15); color: #6d28d9; }
+    .arch-layer.store .arch-layer-text  { background: rgba(139,92,246,.06); color: #4c1d95; }
+
+    /* ── MISSING ─── */
+    .missing-box {
+      background: rgba(245,158,11,.07);
+      border: 1px solid rgba(245,158,11,.2);
+      border-left: 4px solid var(--amber);
+      border-radius: 8px; padding: 20px 22px;
+      margin-top: 32px;
+    }
+    .missing-box h4 { font-size: 13px; font-weight: 600; color: #78350f; margin-bottom: 8px; }
+    .missing-box p { font-size: 13px; color: #92400e; line-height: 1.65; }
+
+    /* ── LIVE LINK ─── */
+    .live-link-wrap { text-align: center; padding: 64px 24px; background: var(--navy); }
+    .live-link-wrap p { font-size: 14px; color: rgba(245,240,232,.5); margin-bottom: 20px; }
+    .live-btn {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: var(--cyan); color: var(--navy);
+      font-weight: 700; font-size: 14px; letter-spacing: .04em;
+      padding: 14px 28px; border-radius: 8px; text-decoration: none;
+      transition: opacity .15s;
+    }
+    .live-btn:hover { opacity: .85; }
+
+    /* ── DIVIDER ─── */
+    hr { border: none; border-top: 1px solid var(--border); margin: 0; }
+
+    /* ── UTIL ─── */
+    .highlight { color: var(--cyan); }
+    .tag-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .tag {
+      font-size: 11px; padding: 4px 10px; border-radius: 4px;
+      font-weight: 600; letter-spacing: .04em;
+    }
+    .tag.green  { background: rgba(34,197,94,.1); color: #16a34a; }
+    .tag.blue   { background: rgba(0,188,212,.1); color: #0e7490; }
+    .tag.purple { background: rgba(139,92,246,.1); color: #6d28d9; }
+    .tag.red    { background: rgba(239,68,68,.1); color: #dc2626; }
+    .tag.amber  { background: rgba(245,158,11,.1); color: #d97706; }
+
+    @media (max-width: 600px) {
+      .section { padding: 52px 18px; }
+      .hero { padding: 56px 18px 52px; }
+      .sol-metrics { grid-template-columns: 1fr 1fr; }
+      .sol-metrics .sol-metric:nth-child(3) { border-top: 1px solid var(--border); grid-column: 1/-1; }
+      .arch-layer { grid-template-columns: 90px 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── HERO ─────────────────────────────────────────────── -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-tag">Artis · Plantage Middenlaan · Amsterdam</div>
+    <h1>Flood Risk Simulator<br><em>Project Breakdown</em></h1>
+    <p class="hero-sub">
+      A clear explanation of the data, the methodology, and the design logic behind the 3D flood simulation — for group members and teacher.
+    </p>
+    <div class="hero-stats">
+      <div class="hstat">
+        <div class="hstat-n c">264</div>
+        <div class="hstat-l">High-risk buildings</div>
+      </div>
+      <div class="hstat">
+        <div class="hstat-n w">117</div>
+        <div class="hstat-l">Impassable roads at 90mm</div>
+      </div>
+      <div class="hstat">
+        <div class="hstat-n w">~4,800</div>
+        <div class="hstat-l">Residents in flood zone</div>
+      </div>
+      <div class="hstat">
+        <div class="hstat-n g">45%</div>
+        <div class="hstat-l">Peak reduction (filter)</div>
+      </div>
+      <div class="hstat">
+        <div class="hstat-n p">+53 cm</div>
+        <div class="hstat-l">Sea level rise by 2050</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── NAV ─────────────────────────────────────────────── -->
+<nav>
+  <div class="nav-inner">
+    <a href="#data">The Data</a>
+    <a href="#map">What's on the Map</a>
+    <a href="#bottlenecks">Bottlenecks</a>
+    <a href="#solutions">Solutions</a>
+    <a href="#architecture">Design Logic</a>
+    <a href="#limitations">Limitations</a>
+  </div>
+</nav>
+
+<!-- ── DATA ─────────────────────────────────────────────── -->
+<section class="section" id="data">
+  <div class="section-inner">
+    <div class="sec-tag">Dataset Overview</div>
+    <h2>Three Official Datasets from Gemeente Amsterdam</h2>
+    <p class="lead">All data comes from the <em>Delen met studenten</em> repository — official GIS data from Waternet and Gemeente Amsterdam, dated February 2026. Here is what each dataset is and how it was used.</p>
+
+    <div class="data-cards">
+
+      <div class="dcard">
+        <div class="dcard-head">
+          <div class="dcard-num r">1</div>
+          <div>
+            <div class="dcard-title">BGT_Risicogevels_70mm — At-Risk Buildings</div>
+            <div class="dcard-sub">200,259 buildings · 70mm/hr rainfall scenario · Gemeente Amsterdam / Waternet</div>
+          </div>
+        </div>
+        <div class="dcard-body">
+          <p><strong>What it is:</strong> Every building in Amsterdam, each one scored for how much floodwater reaches its facade during a simulated 70mm/hr rainfall event. Think of it as a city-wide stress test — what happens to each building if a very heavy storm hits.</p>
+          <p><strong>Key data fields used:</strong><br>
+            — <strong>Risk category</strong> (None / Low / Moderate / High)<br>
+            — <strong>Maximum water depth</strong> at the building facade, in metres<br>
+            — <strong>Average depth</strong> over the full exposed side of the building
+          </p>
+          <p><strong>How we used it:</strong> Filtered to the Artis/Plantage area only. Converted coordinates from the Dutch national grid (RD New / EPSG:28992) to standard GPS coordinates (WGS84) using a custom polynomial formula — no external software, written from scratch. Simplified the geometry to reduce file size, then embedded it in the simulator as the red/orange building layer.</p>
+          <div class="fact-row">
+            <div class="fact"><div class="fact-dot" style="background:#ef4444"></div><strong>1,552</strong> buildings with measurable flood risk</div>
+            <div class="fact"><div class="fact-dot" style="background:#ef4444"></div><strong>264</strong> classified as High Risk</div>
+            <div class="fact"><strong>Red</strong> = High Risk &nbsp;|&nbsp; <strong>Orange</strong> = Moderate Risk</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dcard">
+        <div class="dcard-head">
+          <div class="dcard-num o">2</div>
+          <div>
+            <div class="dcard-title">GOW_Begaanbaarheid_90mm — Road Passability</div>
+            <div class="dcard-sub">8,702 road segments · 90mm/hr rainfall scenario · Waternet</div>
+          </div>
+        </div>
+        <div class="dcard-body">
+          <p><strong>What it is:</strong> Every road segment in Amsterdam labelled either passable or impassable during a 90mm/hr extreme rainfall event. This is the road network under an even more severe storm than the building risk dataset — because roads flood faster than buildings fail.</p>
+          <p><strong>How we used it:</strong> Same process — filtered to Artis area, coordinate conversion, geometry simplification. Embedded as the orange road overlay. Click any orange road segment in the simulator to see its name and road type.</p>
+          <p><strong>The critical finding:</strong> The data confirms that <strong>Plantage Middenlaan</strong> and <strong>Plantage Parklaan</strong> become impassable. These are exactly the same streets that the helophyte filter project documents identified as the sewer problem zones. The two sources independently confirm the same failure points — which validates the project's intervention logic.</p>
+          <div class="fact-row">
+            <div class="fact"><div class="fact-dot" style="background:#f97316"></div><strong>117 road segments</strong> impassable at 90mm</div>
+            <div class="fact">Middenlaan + Parklaan confirmed as failure points</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dcard">
+        <div class="dcard-head">
+          <div class="dcard-num b">3</div>
+          <div>
+            <div class="dcard-title">Waterdiepte_70mm &amp; _90mm — Water Depth Rasters</div>
+            <div class="dcard-sub">0.5m pixel resolution · ArcGIS · Created 18 Feb 2026</div>
+          </div>
+        </div>
+        <div class="dcard-body">
+          <p><strong>What it is:</strong> High-resolution pixel maps showing the exact water depth at every 0.5m × 0.5m square across Amsterdam during both storm scenarios. Created by Waternet using ArcGIS flood modelling.</p>
+          <p><strong>The technical problem:</strong> The actual image files (.tif) were missing from the folder — only the world coordinate files (.tfw) and XML metadata remained. So the pixel-by-pixel depth data could not be read directly.</p>
+          <p><strong>What we did instead:</strong> Read the XML metadata to confirm the simulation extent and the data format. Then calibrated the simulator's water accumulation weights (<strong>WATER_NODES</strong>) to match the documented risk pattern from datasets 1 and 2, ensuring the simulation stays consistent with Waternet's official flood model even without the raw raster data.</p>
+          <div class="fact-row">
+            <div class="fact">Covers 4.73°–5.11°E &nbsp;/&nbsp; 52.28°–52.43°N</div>
+            <div class="fact">Depth field: DEPTH2D · 0.5m resolution</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Technical note -->
+    <div class="missing-box" style="margin-top:28px;border-color:rgba(0,188,212,.2);border-left-color:var(--cyan);background:rgba(0,188,212,.04)">
+      <h4 style="color:#0e7490">Technical note: Coordinate transformation</h4>
+      <p style="color:#155e75">Dutch maps use a national coordinate system called RD New (EPSG:28992 / Rijksdriehoekstelsel) — not the GPS latitude/longitude the rest of the world uses. We wrote a custom polynomial formula from scratch to convert every building and road coordinate to standard WGS84. This was necessary because the usual conversion library (pyproj) failed to install in the environment. Accuracy: within ±1 metre.</p>
+    </div>
+  </div>
+</section>
+
+<hr>
+
+<!-- ── MAP ─────────────────────────────────────────────── -->
+<section class="section alt" id="map">
+  <div class="section-inner">
+    <div class="sec-tag">Visual Guide</div>
+    <h2>What's on the Map — and Why</h2>
+    <p class="lead">Every visual element in the simulator has a specific data source and a specific reason for existing. Here is what you are looking at.</p>
+
+    <div class="map-grid">
+      <div class="mcard">
+        <div class="mcard-head">
+          <div class="mcard-icon" style="background:rgba(0,188,212,.12)">🟦</div>
+          <div class="mcard-title">Cyan 3D Columns — Water Accumulation</div>
+        </div>
+        <p>Not actual flow — accumulated water depth. A grid of ~60 hexagons covers the area. Each hexagon's height is calculated using a Gaussian-weighted formula over 50+ data nodes, placed according to the BGT and GOW risk data. The taller the column, the deeper the flood at that location. They animate up and down as you change the rainfall scenario.</p>
+      </div>
+
+      <div class="mcard">
+        <div class="mcard-head">
+          <div class="mcard-icon" style="background:rgba(38,198,133,.12)">🟢</div>
+          <div class="mcard-title">Moving Green Dots — Water Flow Path</div>
+        </div>
+        <p>These show the direction storm runoff travels — west to east along the south bank of Entrepotdok, toward the canal. They fade as they reach the canal, simulating dispersion. In Adaptive mode, additional dots appear flowing through the helophyte filter polygon, showing the filtration pathway.</p>
+      </div>
+
+      <div class="mcard">
+        <div class="mcard-head">
+          <div class="mcard-icon" style="background:rgba(0,0,0,.05)">🏗</div>
+          <div class="mcard-title">3D Grey Buildings — OpenStreetMap (OSM)</div>
+        </div>
+        <p>Live building footprints fetched from OpenStreetMap on page load via Overpass API. Where buildings have a recorded height, that's used. Where they don't, a default of ~10m (3 floors) is applied. These are visual context only — they don't affect the flood calculation, but they make it spatially legible.</p>
+      </div>
+
+      <div class="mcard">
+        <div class="mcard-head">
+          <div class="mcard-icon" style="background:rgba(239,68,68,.10)">🔴</div>
+          <div class="mcard-title">Red/Orange Building Overlay — BGT Risk</div>
+        </div>
+        <p>The BGT_Risicogevels_70mm data. Red = High Risk buildings (264 of them). Orange = Moderate Risk. Click any building to see the exact maximum water depth documented by Waternet. This layer is the official municipal flood risk assessment for this area.</p>
+      </div>
+
+      <div class="mcard">
+        <div class="mcard-head">
+          <div class="mcard-icon" style="background:rgba(249,115,22,.10)">🟠</div>
+          <div class="mcard-title">Orange Road Overlay — GOW Passability</div>
+        </div>
+        <p>The GOW_Begaanbaarheid_90mm data. Every orange road segment is classified as impassable at 90mm/hr rainfall. Click any road to see its name. Plantage Middenlaan and Parklaan are both highlighted — directly matching the sewer problem zones in the helophyte filter documents.</p>
+      </div>
+
+      <div class="mcard">
+        <div class="mcard-head">
+          <div class="mcard-icon" style="background:rgba(34,197,94,.12)">🟩</div>
+          <div class="mcard-title">Green Polygon — Helophyte Filter</div>
+        </div>
+        <p>The proposed 4,000m² helophyte filter along Entrepotdok, from Hippo Bridge to the old Railway Bridge. Two sections: Section 1 (vertical flow, 1,000m²) and Section 2 (horizontal + surface flow, 3,000m²). Click the polygon to see section details. Pulses brighter in Adaptive mode.</p>
+      </div>
+
+      <div class="mcard">
+        <div class="mcard-head">
+          <div class="mcard-icon" style="background:rgba(139,92,246,.12)">🔵</div>
+          <div class="mcard-title">Purple Dot — BlueBloqs (Underground Buffer)</div>
+        </div>
+        <p>The BlueBloqs underground rainwater buffer inside Artis Zoo grounds. 340m³ capacity, 30m deep well. This is an Aquifer Storage & Recovery system — not a surface feature. The dot marks the approximate surface location; the actual system is entirely underground.</p>
+      </div>
+
+      <div class="mcard">
+        <div class="mcard-head">
+          <div class="mcard-icon" style="background:rgba(245,158,11,.12)">🟡</div>
+          <div class="mcard-title">Amber Square — 3rd Filter (Proposed)</div>
+        </div>
+        <p>A proposed supplementary helophyte filter at Plantage Kerklaan (~300m²). Not yet built — this is part of the 2030 Artis plan. The square marker (vs. circle for BlueBloqs) signals it's a different type of intervention. Connects the Kerklaan sewer overflow to the existing filter system.</p>
+      </div>
+
+      <div class="mcard">
+        <div class="mcard-head">
+          <div class="mcard-icon" style="background:rgba(239,68,68,.10)">⚠️</div>
+          <div class="mcard-title">Pulsing Red Circles — Bottlenecks</div>
+        </div>
+        <p>Five specific failure points in the drainage system, each grounded in a documented incident or physical constraint. Size and pulse intensity correspond to severity score. Click any marker for a full breakdown: what fails, why it fails there, and the data source.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr>
+
+<!-- ── BOTTLENECKS ─────────────────────────────────────── -->
+<section class="section" id="bottlenecks">
+  <div class="section-inner">
+    <div class="sec-tag">Failure Points</div>
+    <h2>The 5 Bottlenecks — and Why They're There</h2>
+    <p class="lead">Each marker is not placed arbitrarily. Every one is grounded in a specific documented failure, a physical constraint, or a hydraulic limit confirmed by multiple data sources.</p>
+
+    <div class="bn-list">
+
+      <div class="bn">
+        <div class="bn-head">
+          <div>
+            <div class="bn-name">Plantage Middenlaan — Sewer Backup</div>
+            <div class="sev-bar-wrap"><div class="sev-bar" style="width:97%;background:linear-gradient(to right,#f97316,#ef4444)"></div></div>
+            <div class="sev-pct">Severity 97% — Critical</div>
+          </div>
+          <div class="bn-tag critical">Critical</div>
+        </div>
+        <div class="bn-body">
+          <div class="bn-col">
+            <div class="bn-col-label">What happens here</div>
+            <p>Sewer backs up and surfaces through drain grates at the <strong>Artis main gate</strong>. Documented in Waternet's own incident database. Starts at rainfall above 15mm/hr.</p>
+          </div>
+          <div class="bn-col">
+            <div class="bn-col-label">Why this spot specifically</div>
+            <p>The sewer pipe here was sized in the 1970s. The street is <strong>100% impervious</strong> — road, tram track, cycle lane, pavement. Every drop of rain goes straight into this one pipe. Above 15mm/hr it physically cannot handle the volume.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bn">
+        <div class="bn-head">
+          <div>
+            <div class="bn-name">Plantage Kerklaan — Surface Runoff</div>
+            <div class="sev-bar-wrap"><div class="sev-bar" style="width:91%;background:linear-gradient(to right,#f97316,#ef4444)"></div></div>
+            <div class="sev-pct">Severity 91% — Critical</div>
+          </div>
+          <div class="bn-tag critical">Critical</div>
+        </div>
+        <div class="bn-body">
+          <div class="bn-col">
+            <div class="bn-col-label">What happens here</div>
+            <p>Water sheets off the road and pools at the <strong>Kerklaan–Middenlaan intersection</strong>. Gutter capacity is overwhelmed. Confirmed by GOW data as impassable at 90mm.</p>
+          </div>
+          <div class="bn-col">
+            <div class="bn-col-label">Why this spot specifically</div>
+            <p>Highest impervious coverage in the district (~94%). No infiltration system, no buffer connection. Runoff has <strong>nowhere to go</strong> except downstream toward Muidergracht. This is why the 3rd filter proposal targets this street.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bn">
+        <div class="bn-head">
+          <div>
+            <div class="bn-name">Hippo Bridge (Nijlpaardbrug) — Filter Inlet</div>
+            <div class="sev-bar-wrap"><div class="sev-bar" style="width:86%;background:linear-gradient(to right,#f59e0b,#f97316)"></div></div>
+            <div class="sev-pct">Severity 86% — High</div>
+          </div>
+          <div class="bn-tag high">High</div>
+        </div>
+        <div class="bn-body">
+          <div class="bn-col">
+            <div class="bn-col-label">What happens here</div>
+            <p>Western entry point of the helophyte filter. Peak inflow documented at <strong>~97m³/hr</strong> — near the design limit of the pre-treatment sand-filter beach.</p>
+          </div>
+          <div class="bn-col">
+            <div class="bn-col-label">Why this spot specifically</div>
+            <p>The bridge abutments and the narrow sand-filter beach create a physical bottleneck. When inflow exceeds capacity, the pre-treatment saturates — reducing biological filtration efficiency in the sections downstream.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bn">
+        <div class="bn-head">
+          <div>
+            <div class="bn-name">Southeast Passage — Narrow Corridor</div>
+            <div class="sev-bar-wrap"><div class="sev-bar" style="width:80%;background:linear-gradient(to right,#f59e0b,#f97316)"></div></div>
+            <div class="sev-pct">Severity 80% — Elevated</div>
+          </div>
+          <div class="bn-tag elevated">Elevated</div>
+        </div>
+        <div class="bn-body">
+          <div class="bn-col">
+            <div class="bn-col-label">What happens here</div>
+            <p>Only overflow route southward toward Sarphatistraat. Water rises faster here than anywhere else in the district when Muidergracht backs up.</p>
+          </div>
+          <div class="bn-col">
+            <div class="bn-col-label">Why this spot specifically</div>
+            <p>Roughly <strong>4m of effective drainage width</strong> between the Artis boundary wall and adjacent buildings — serving a much larger upstream catchment. Geometrically impossible for water to escape laterally.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bn">
+        <div class="bn-head">
+          <div>
+            <div class="bn-name">Railway Bridge (Spoorbrug) — Filter Outlet</div>
+            <div class="sev-bar-wrap"><div class="sev-bar" style="width:74%;background:linear-gradient(to right,#f59e0b,#f97316)"></div></div>
+            <div class="sev-pct">Severity 74% — Elevated</div>
+          </div>
+          <div class="bn-tag elevated">Elevated</div>
+        </div>
+        <div class="bn-body">
+          <div class="bn-col">
+            <div class="bn-col-label">What happens here</div>
+            <p>Eastern outlet of the helophyte filter. Old bridge abutments restrict outflow width. Treated water returns to canal here — risk is filter performance, not street flooding.</p>
+          </div>
+          <div class="bn-col">
+            <div class="bn-col-label">Why lower severity than inlet</div>
+            <p>By this point water has passed through most of the filter. The bottleneck here reduces hydraulic gradient through the filter, slowing treatment — but doesn't cause street flooding the way the inlet and sewer points do.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<hr>
+
+<!-- ── SOLUTIONS ─────────────────────────────────────────── -->
+<section class="section alt" id="solutions">
+  <div class="section-inner">
+    <div class="sec-tag">Interventions</div>
+    <h2>The Three Flood Solutions</h2>
+    <p class="lead">The simulator models three distinct interventions. They are not interchangeable — each operates at a different scale, a different time, and solves a different part of the problem.</p>
+
+    <div class="sol-grid">
+
+      <div class="sol helo">
+        <div class="sol-head">
+          <div class="sol-type">Large-Scale Treatment Infrastructure · Built along Entrepotdok</div>
+          <div class="sol-name">Helophyte Filter — Entrepotdok</div>
+          <div class="sol-desc">
+            A 368-metre constructed wetland along the south bank of Entrepotdok — from Hippo Bridge to the old Railway Bridge. Uses marsh plants (<em>reed</em> and <em>galingale</em>) as a biological treatment system. Water flows through sand and gravel colonised by microbes that break down pollutants: phosphorus, nitrates, heavy metals, E. coli. Three filter types run in sequence: vertical flow → horizontal flow → open surface wetland.<br><br>
+            <strong>Data source:</strong> helofytenfilterentropodok.xlsx — extracted from embedded drawing XML (the file was structured as an image-based presentation, not a spreadsheet).
+          </div>
+          <div class="tag-row">
+            <span class="tag green">Vertical flow · 97m</span>
+            <span class="tag blue">Horizontal flow</span>
+            <span class="tag green">Surface wetland</span>
+            <span class="tag green">Real project · 2026 plan</span>
+          </div>
+        </div>
+        <div class="sol-metrics">
+          <div class="sol-metric">
+            <div class="sol-metric-n">4,000 m²</div>
+            <div class="sol-metric-l">Filter area</div>
+          </div>
+          <div class="sol-metric">
+            <div class="sol-metric-n">1,400 m³</div>
+            <div class="sol-metric-l">Storm retention</div>
+          </div>
+          <div class="sol-metric">
+            <div class="sol-metric-n">45%</div>
+            <div class="sol-metric-l">Peak flow reduction</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sol bb">
+        <div class="sol-head">
+          <div class="sol-type">Underground Aquifer Storage · Inside Artis Zoo</div>
+          <div class="sol-name">BlueBloqs Rainwater Buffer</div>
+          <div class="sol-desc">
+            An underground circular water system by FieldFactors. A 5-step cycle: capture surface rainwater → retain in underground tank → purify through BlueBiofilter → store in the deep sandy aquifer 30 metres below ground → recover for reuse. The BlueWell bypasses Amsterdam's impermeable clay/peat surface by going straight into the Pleistocene sand aquifer beneath.<br><br>
+            <strong>Why this matters:</strong> This is not a wadi. A classic wadi relies on water soaking into the ground — which doesn't happen in Amsterdam's clay-on-peat soil (infiltration rate: &lt;1mm/hr). BlueBloqs bypasses the soil entirely. The storm event and the water release are decoupled — the system captures the peak instantly and releases it on its own schedule.
+          </div>
+          <div class="tag-row">
+            <span class="tag purple">ASR — Aquifer Storage &amp; Recovery</span>
+            <span class="tag purple">H2Q® monitoring</span>
+            <span class="tag purple">7.8M L/yr reuse</span>
+          </div>
+        </div>
+        <div class="sol-metrics">
+          <div class="sol-metric">
+            <div class="sol-metric-n">340 m³</div>
+            <div class="sol-metric-l">Storage capacity</div>
+          </div>
+          <div class="sol-metric">
+            <div class="sol-metric-n">~30 m</div>
+            <div class="sol-metric-l">Well depth</div>
+          </div>
+          <div class="sol-metric">
+            <div class="sol-metric-n">30%</div>
+            <div class="sol-metric-l">Peak reduction</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sol f3">
+        <div class="sol-head">
+          <div class="sol-type">Proposed · Plantage Kerklaan · 2030 Artis Plan</div>
+          <div class="sol-name">3rd Filter — Plantage Kerklaan</div>
+          <div class="sol-desc">
+            A smaller supplementary vertical helophyte filter (~300m²) proposed along Plantage Kade, west of Hippo Bridge. Would connect the Kerklaan sewer overflow and Middenlaan rainwater directly into the existing filter system. Not yet built — part of the 2030 Artis flood-play forest plan. Plants: galingale and bulrush (<em>Schoenoplectus lacustris</em>).<br><br>
+            <strong>Why it's shown separately:</strong> It addresses a different catchment area than the main Entrepotdok filter. Kerklaan's runoff currently has no managed outlet — this filter would intercept it before it reaches the overburdened sewer.
+          </div>
+          <div class="tag-row">
+            <span class="tag amber">Proposed — not yet built</span>
+            <span class="tag amber">Vertical helophyte filter</span>
+            <span class="tag amber">2030 plan</span>
+          </div>
+        </div>
+        <div class="sol-metrics">
+          <div class="sol-metric">
+            <div class="sol-metric-n">300 m²</div>
+            <div class="sol-metric-l">Filter area</div>
+          </div>
+          <div class="sol-metric">
+            <div class="sol-metric-n">280 m³</div>
+            <div class="sol-metric-l">Estimated retention</div>
+          </div>
+          <div class="sol-metric">
+            <div class="sol-metric-n">22%</div>
+            <div class="sol-metric-l">Estimated reduction</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<hr>
+
+<!-- ── ARCHITECTURE ─────────────────────────────────────── -->
+<section class="section" id="architecture">
+  <div class="section-inner">
+    <div class="sec-tag">Design Logic</div>
+    <h2>The Layered System — How It All Fits Together</h2>
+    <p class="lead">The three interventions are not alternatives to each other. They operate at completely different time scales and storm intensities. Together they form a layered defence that covers the full spectrum of rain events.</p>
+
+    <div class="arch-layers">
+      <div class="arch-layer micro">
+        <div class="arch-layer-label">Layer 1<br>Micro-wadis</div>
+        <div class="arch-layer-text">
+          <strong>Everyday rain (5–10mm events) — 80% of all rain events by count.</strong><br>
+          Small planted infiltration trenches, tree pits with engineered soil, rain gardens at street intersections. These handle the frequent, small events that build up sewer load over the year. They don't need to work during the extreme storm — they reduce the baseline load so the sewer has more capacity when the big event comes.
+        </div>
+      </div>
+      <div class="arch-layer peak">
+        <div class="arch-layer-label">Layer 2<br>Helophyte Filter</div>
+        <div class="arch-layer-text">
+          <strong>Heavy events (20–80mm) — the peak storm routing and treatment layer.</strong><br>
+          The 4,000m² Entrepotdok filter intercepts the peak flow from the Muidergracht corridor, treats it biologically, and returns clean water to the canal at a controlled rate. It cuts peak flow by 45%. Crucially, it works regardless of soil permeability — water moves through the constructed medium, not into the ground.
+        </div>
+      </div>
+      <div class="arch-layer store">
+        <div class="arch-layer-label">Layer 3<br>BlueBloqs</div>
+        <div class="arch-layer-text">
+          <strong>Extreme events + dry summer periods — the circular storage layer.</strong><br>
+          Captures and stores whatever the filter can't handle. Decouples the storm from the release — the water goes underground during the event and comes back up for irrigation, toilet flushing, and zoo pond topping throughout the summer. One system solves both: too much water in winter, too little in summer.
+        </div>
+      </div>
+    </div>
+
+    <p style="font-size:15px;color:var(--mid);line-height:1.7;max-width:680px;margin-top:8px">
+      None of these systems overlap. They each handle a different intensity of event, at a different time scale. The simulator's "Adaptive" mode activates all three simultaneously — which is why the water depth drops from 70cm to ~38cm in the extreme scenario.
+    </p>
+  </div>
+</section>
+
+<hr>
+
+<!-- ── LIMITATIONS ─────────────────────────────────────── -->
+<section class="section alt" id="limitations">
+  <div class="section-inner">
+    <div class="sec-tag">Honest Assessment</div>
+    <h2>What the Simulator Does Not Have</h2>
+    <p class="lead">Every model has limits. These are the honest gaps — what would make the analysis stronger if it were available.</p>
+
+    <div class="missing-box">
+      <h4>Missing: Water depth raster files (.tif)</h4>
+      <p>The Waterdiepte_70mm and _90mm GeoTIFF files were absent from the dataset folder — only the coordinate (.tfw) and metadata (.xml) files remained. The hex grid weights were calibrated against the building and road risk data instead. The simulation is consistent with Waternet's risk patterns, but does not directly read pixel-level depth values.</p>
+    </div>
+
+    <div class="missing-box" style="margin-top:14px">
+      <h4>Missing: Ground-truth infiltration map for Kerklaan and Middenlaan</h4>
+      <p>The wadi discussion in this project is partly theoretical because we don't have a soil permeability survey for the specific parcels. There may be isolated zones near the Hortus Botanicus or recent construction sites where surface infiltration is actually viable. Without that data, you can't know where a planted infiltration trench would work vs. where it would just become a muddy pond. A geotechnical survey of the street-level soil would resolve this.</p>
+    </div>
+
+    <div class="missing-box" style="margin-top:14px">
+      <h4>Missing: Exact installation coordinates for BlueBloqs</h4>
+      <p>The BlueBloqs marker is placed at an approximate representative point inside Artis Zoo. The project documents confirm it's an Artis interior system but don't specify the installation location down to a building or enclosure. The marker should be treated as planning-level precision, not construction-level.</p>
+    </div>
+
+    <div class="missing-box" style="margin-top:14px;border-color:rgba(139,92,246,.2);border-left-color:var(--purple);background:rgba(139,92,246,.04)">
+      <h4 style="color:#4c1d95">What would make this stronger</h4>
+      <p style="color:#5b21b6">A soil permeability survey along Kerklaan and Middenlaan · Full access to the .tif raster files · Confirmed BlueBloqs installation coordinates · Real-time KNMI rainfall data for the Plantage weather station · A flow rate measurement at Hippo Bridge inlet during an actual storm event.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── LIVE LINK ─────────────────────────────────────────── -->
+<div class="live-link-wrap">
+  <p>The live 3D simulation — explore all scenarios, layers, and the guided flood tour</p>
+  <a class="live-btn" href="index.html">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="5,3 13,8 5,13"/></svg>
+    Open the Simulator →
+  </a>
+</div>
+
+<script>
+  // Highlight active nav link on scroll
+  const sections = document.querySelectorAll('section[id], div[id]');
+  const navLinks = document.querySelectorAll('nav a');
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        navLinks.forEach(l => {
+          l.style.color = '';
+          l.style.borderColor = '';
+        });
+        const active = document.querySelector(`nav a[href="#${e.target.id}"]`);
+        if (active) {
+          active.style.color = '#0d1b2a';
+          active.style.borderBottomColor = '#00bcd4';
+        }
+      }
+    });
+  }, { threshold: 0.35 });
+  sections.forEach(s => obs.observe(s));
+</script>
+</body>
+</html>
