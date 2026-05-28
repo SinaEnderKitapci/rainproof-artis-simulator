@@ -113,18 +113,122 @@
     .policy-note p { font-size: 10px; color: var(--mid); line-height: 1.45; }
     .policy-note strong { color: var(--warnm); }
 
+    /* ── MODE INDICATOR — sticky, always visible ─────────────────── */
+    #mode-indicator {
+      position: sticky; top: 0; z-index: 3;
+      padding: 8px 14px 4px;
+      background: var(--panel);
+    }
+    #mode-ind-bar {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 16px; border-radius: 8px;
+      border: 2px solid; transition: all .35s ease;
+    }
+    #mode-ind-bar.cur {
+      background: rgba(255,87,34,.18);
+      border-color: rgba(255,87,34,.75);
+      box-shadow: 0 0 24px rgba(255,87,34,.18), inset 0 0 32px rgba(255,87,34,.06);
+      animation: modePulse-cur 2.5s ease-in-out infinite;
+    }
+    #mode-ind-bar.adp {
+      background: rgba(38,198,133,.16);
+      border-color: rgba(38,198,133,.75);
+      box-shadow: 0 0 24px rgba(38,198,133,.18), inset 0 0 32px rgba(38,198,133,.06);
+    }
+    @keyframes modePulse-cur {
+      0%,100% { box-shadow: 0 0 16px rgba(255,87,34,.15); }
+      50%      { box-shadow: 0 0 36px rgba(255,87,34,.35); }
+    }
+    #mode-ind-icon { font-size: 28px; flex-shrink: 0; line-height: 1; }
+    #mode-ind-text { flex: 1; }
+    #mode-ind-label {
+      font-size: 16px; font-weight: 800; letter-spacing: -.02em; line-height: 1.1;
+      transition: color .3s;
+    }
+    #mode-ind-bar.cur #mode-ind-label { color: #ff8a50; }
+    #mode-ind-bar.adp #mode-ind-label { color: #26c685; }
+    #mode-ind-sub {
+      font-size: 10px; font-family: var(--mono); letter-spacing: .05em;
+      text-transform: uppercase; margin-top: 3px; opacity: .75;
+      transition: color .3s;
+    }
+    #mode-ind-bar.cur #mode-ind-sub { color: #ff8a50; }
+    #mode-ind-bar.adp #mode-ind-sub { color: #26c685; }
+
+    @keyframes fw-fly {
+      0%   { transform: translate(0,0) scale(1.2); opacity: 1; }
+      100% { transform: translate(var(--fx),var(--fy)) scale(0); opacity: 0; }
+    }
+    @keyframes adp-ring {
+      0%   { transform: scale(1); opacity: 0.75; }
+      100% { transform: scale(2.4); opacity: 0; }
+    }
+    @keyframes adp-spark-in {
+      0%   { transform: scale(0.93); filter: brightness(1); }
+      35%  { transform: scale(1.05); filter: brightness(1.8); box-shadow: 0 0 0 10px rgba(38,198,133,.3), 0 0 50px rgba(38,198,133,.55); }
+      65%  { transform: scale(1.01); filter: brightness(1.25); }
+      100% { transform: scale(1);   filter: brightness(1); }
+    }
+    #mode-ind-bar.adp-spark {
+      animation: adp-spark-in 0.6s cubic-bezier(.34,1.56,.64,1) forwards !important;
+    }
+
     /* Mode switch */
-    .msw { display: grid; grid-template-columns: 1fr 1fr; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 3px; gap: 3px; }
+    .msw { display: grid; grid-template-columns: 1fr 1fr; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 4px; gap: 4px; }
     .mb {
-      padding: 8px; border: none; border-radius: 4px; cursor: pointer;
-      font-family: var(--font); font-size: 11px; font-weight: 600; text-align: center;
-      background: transparent; color: var(--mid); transition: all .2s cubic-bezier(.34,1.56,.64,1);
+      padding: 12px 8px; border: 1.5px solid transparent; border-radius: 6px; cursor: pointer;
+      font-family: var(--font); font-size: 13px; font-weight: 700; text-align: center;
+      background: transparent; color: var(--lo); transition: all .25s cubic-bezier(.34,1.56,.64,1);
+      line-height: 1.2;
     }
     .mb:hover { color: var(--text); background: var(--raised); }
-    .mb.a-cur { background: rgba(255,87,34,.15); color: var(--warnm); }
-    .mb.a-adp { background: rgba(167,139,250,.15); color: var(--purple); }
-    .mdesc { font-size: 10px; color: var(--mid); margin-top: 8px; line-height: 1.5; min-height: 30px; }
-    .mdesc strong { color: var(--text); }
+    .mb.a-cur {
+      background: rgba(255,87,34,.28);
+      color: #ff7043;
+      border-color: rgba(255,87,34,.7);
+      box-shadow: 0 0 20px rgba(255,87,34,.3), inset 0 1px 0 rgba(255,138,80,.2);
+    }
+    .mb.a-adp {
+      background: rgba(38,198,133,.25);
+      color: #26c685;
+      border-color: rgba(38,198,133,.7);
+      box-shadow: 0 0 20px rgba(38,198,133,.3), inset 0 1px 0 rgba(38,198,133,.2);
+    }
+    /* Mode banner */
+    #mode-banner {
+      margin: 8px 14px 0;
+      padding: 10px 14px;
+      border-radius: var(--r);
+      display: flex; align-items: center; gap: 10px;
+      font-size: 12px; font-weight: 700; line-height: 1.3;
+      transition: all .3s ease;
+      border: 1.5px solid;
+    }
+    #mode-banner.mb-cur { background: rgba(255,87,34,.12); border-color: rgba(255,87,34,.4); color: #ff8a50; }
+    #mode-banner.mb-adp { background: rgba(38,198,133,.1); border-color: rgba(38,198,133,.4); color: #26c685; }
+    #mode-banner-icon { font-size: 20px; flex-shrink: 0; }
+    #mode-banner-text { flex: 1; }
+    #mode-banner-text small { display: block; font-size: 10px; font-weight: 400; opacity: .75; margin-top: 2px; }
+    .mdesc { font-size: 11px; color: var(--mid); margin-top: 8px; line-height: 1.55; min-height: 32px; }
+    .mdesc strong { color: var(--text); font-size: 12px; }
+
+    /* ── WADI MARKERS — adaptive glow ──────────────────────────────── */
+    .wdm {
+      width: 16px; height: 16px; border-radius: 50%;
+      background: rgba(167,139,250,.9); border: 2px solid rgba(167,139,250,.6);
+      box-shadow: 0 0 10px rgba(167,139,250,.5);
+      cursor: pointer; pointer-events: all;
+      transition: transform .2s cubic-bezier(.34,1.56,.64,1), box-shadow .3s;
+    }
+    .wdm:hover { transform: scale(1.5); box-shadow: 0 0 22px rgba(167,139,250,.9); }
+    .wdm.wdm-lit {
+      box-shadow: 0 0 0 3px rgba(167,139,250,.25), 0 0 20px rgba(167,139,250,.8), 0 0 40px rgba(167,139,250,.4);
+      animation: wadiGlow 1.8s ease-in-out infinite;
+    }
+    @keyframes wadiGlow {
+      0%,100% { box-shadow: 0 0 0 0 rgba(167,139,250,.4), 0 0 16px rgba(167,139,250,.7); }
+      50%      { box-shadow: 0 0 0 10px rgba(167,139,250,0), 0 0 30px rgba(167,139,250,1), 0 0 60px rgba(167,139,250,.35); }
+    }
 
     /* Layers */
     .ll { display: flex; flex-direction: column; gap: 5px; }
@@ -208,14 +312,7 @@
     @keyframes bpulse { 0%{box-shadow:0 0 0 0 rgba(255,87,34,.7)} 70%{box-shadow:0 0 0 16px rgba(255,87,34,0)} 100%{box-shadow:0 0 0 0 rgba(255,87,34,0)} }
 
     /* Wadi markers — BlueBloqs only */
-    .wdm {
-      width: 14px; height: 14px; border-radius: 50%;
-      background: rgba(167,139,250,.9); border: 2px solid rgba(167,139,250,.5);
-      box-shadow: 0 0 8px rgba(167,139,250,.4);
-      cursor: pointer; pointer-events: all;
-      transition: transform .2s cubic-bezier(.34,1.56,.64,1);
-    }
-    .wdm:hover { transform: scale(1.4); box-shadow: 0 0 16px rgba(167,139,250,.7); }
+    /* .wdm styles defined in Mode toggle section above */
 
     /* 3rd filter marker — proposed, distinct from both BlueBloqs and helophyte */
     .f3m {
@@ -365,6 +462,9 @@
     .blockpop .maplibregl-popup-content { background: rgba(6,13,21,.96) !important; border: 1px solid rgba(255,140,0,.28) !important; border-radius: 7px !important; padding: 10px 13px !important; box-shadow: 0 8px 24px rgba(0,0,0,.6) !important; backdrop-filter: blur(12px) !important; min-width: 170px; font-family:'Space Grotesk',sans-serif; }
     .blockpop .maplibregl-popup-tip { border-top-color: rgba(255,140,0,.28) !important; }
 
+    /* ── AREA MINI-MAP ─────────────────────────────────────────────── */
+    #area-minimap { display: none; }
+
     @media (max-width: 768px) {
       body { flex-direction: column; }
       #sb { width: 100%; min-width: 0; height: 44vh; border-right: none; border-bottom: 1px solid var(--border); }
@@ -496,6 +596,11 @@
     .ip-divider { height: 1px; background: var(--border); margin: 8px 0; }
     .ip-facility { display: flex; align-items: center; gap: 6px; padding: 4px 0; font-size: 10px; color: var(--mid); }
     .ip-facility-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+    #impact-panel { display: none; }
+    .impact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 8px; }
+    .ig-cell { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; }
+    .ig-cell .ip-val { font-size: 17px; display: block; line-height: 1; }
+    .ig-key { font-size: 9px; color: var(--lo); text-transform: uppercase; letter-spacing: .06em; margin-top: 3px; font-family: var(--mono); }
     #ip-toggle {
       position: absolute; top: 42px; right: 12px;
       z-index: 9; display: none;
@@ -595,35 +700,41 @@
 
     /* ── SYSTEM FLOW DIAGRAM ────────────────────────────────────────── */
     #sys-flow {
-      margin: 8px 14px 0;
-      padding: 10px 12px;
+      margin: 10px 14px 0;
+      padding: 4px 12px;
       background: var(--surface);
       border: 1px solid var(--border); border-radius: var(--r);
-      display: flex; align-items: center; justify-content: space-between; gap: 3px;
+      display: flex; flex-direction: column;
     }
-    .sf-node { display: flex; flex-direction: column; align-items: center; gap: 3px; flex: 1; }
+    .sf-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 0; border-bottom: 1px solid var(--border);
+    }
+    .sf-row:last-child { border-bottom: none; }
     .sf-icon {
-      width: 30px; height: 30px; border-radius: 7px;
+      width: 28px; height: 28px; border-radius: 7px; flex-shrink: 0;
       display: flex; align-items: center; justify-content: center;
-      font-size: 15px; border: 1px solid;
-      transition: background .3s, border-color .3s, box-shadow .3s;
+      border: 1.5px solid; transition: background .3s, border-color .3s, box-shadow .3s;
     }
-    .sf-label { font-size: 7.5px; text-align: center; line-height: 1.3; font-family: var(--mono); text-transform: uppercase; letter-spacing: .05em; transition: color .3s; }
-    .sf-val { font-family: var(--mono); font-size: 9px; font-weight: 700; border-radius: 3px; padding: 1px 5px; margin-top: 1px; border: 1px solid; transition: all .3s; }
-    .sf-arrow { font-size: 13px; color: var(--lo); flex-shrink: 0; padding-bottom: 12px; }
-    .sf-node.sn-rain   .sf-icon  { background: rgba(96,165,250,.1); border-color: rgba(96,165,250,.28); }
-    .sf-node.sn-rain   .sf-label { color: #60a5fa; }
-    .sf-node.sn-rain   .sf-val   { color: #60a5fa; background: rgba(96,165,250,.1); border-color: rgba(96,165,250,.2); }
-    .sf-node.sn-system .sf-icon  { background: rgba(167,139,250,.1); border-color: rgba(167,139,250,.28); }
-    .sf-node.sn-system .sf-label { color: var(--purple); }
-    .sf-node.sn-system .sf-val   { color: var(--purple); background: rgba(167,139,250,.1); border-color: rgba(167,139,250,.2); }
-    .sf-node.sn-drain  .sf-icon  { background: rgba(255,138,80,.1); border-color: rgba(255,138,80,.28); }
-    .sf-node.sn-drain  .sf-label { color: var(--warnm); }
-    .sf-node.sn-drain  .sf-val   { color: var(--warnm); background: rgba(255,138,80,.1); border-color: rgba(255,138,80,.2); }
-    .sf-node.sn-system.sf-adaptive .sf-icon  { background: rgba(38,198,133,.14); border-color: rgba(38,198,133,.35); animation: sfpulse 2.5s ease-in-out infinite; }
-    .sf-node.sn-system.sf-adaptive .sf-label { color: var(--good); }
-    .sf-node.sn-system.sf-adaptive .sf-val   { color: var(--good); background: rgba(38,198,133,.12); border-color: rgba(38,198,133,.25); }
-    @keyframes sfpulse { 0%,100%{box-shadow:0 0 0 0 rgba(38,198,133,.2)} 50%{box-shadow:0 0 0 5px rgba(38,198,133,0)} }
+    .sf-info { flex: 1; min-width: 0; }
+    .sf-label { font-size: 10px; font-family: var(--mono); text-transform: uppercase; letter-spacing: .06em; font-weight: 600; transition: color .3s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .sf-val { font-family: var(--mono); font-size: 10px; font-weight: 700; border-radius: 4px; padding: 2px 6px; border: 1px solid; flex-shrink: 0; white-space: nowrap; transition: all .3s; }
+    .sf-row.sn-rain   .sf-icon  { background: rgba(96,165,250,.15); border-color: rgba(96,165,250,.5); }
+    .sf-row.sn-rain   .sf-label { color: #60a5fa; }
+    .sf-row.sn-rain   .sf-val   { color: #93c5fd; background: rgba(96,165,250,.12); border-color: rgba(96,165,250,.35); }
+    .sf-row.sn-system .sf-icon  { background: rgba(167,139,250,.15); border-color: rgba(167,139,250,.5); }
+    .sf-row.sn-system .sf-label { color: var(--purple); }
+    .sf-row.sn-system .sf-val   { color: var(--purple); background: rgba(167,139,250,.12); border-color: rgba(167,139,250,.35); }
+    .sf-row.sn-drain  .sf-icon  { background: rgba(255,138,80,.15); border-color: rgba(255,138,80,.5); }
+    .sf-row.sn-drain  .sf-label { color: var(--warnm); }
+    .sf-row.sn-drain  .sf-val   { color: var(--warnm); background: rgba(255,138,80,.12); border-color: rgba(255,138,80,.35); }
+    .sf-row.sn-system.sf-adaptive .sf-icon  { background: rgba(38,198,133,.18); border-color: rgba(38,198,133,.55); animation: sfpulse 2.5s ease-in-out infinite; box-shadow: 0 0 10px rgba(38,198,133,.2); }
+    .sf-row.sn-system.sf-adaptive .sf-label { color: var(--good); }
+    .sf-row.sn-system.sf-adaptive .sf-val   { color: var(--good); background: rgba(38,198,133,.15); border-color: rgba(38,198,133,.4); }
+    .sfi-filter { display: none; }
+    .sf-adaptive .sfi-filter { display: block; }
+    .sf-adaptive .sfi-sewer  { display: none; }
+    @keyframes sfpulse { 0%,100%{box-shadow:0 0 0 0 rgba(38,198,133,.3)} 50%{box-shadow:0 0 0 8px rgba(38,198,133,0)} }
 
     /* ── VIEW TOGGLE ────────────────────────────────────────────────── */
     #view-toggle {
@@ -660,6 +771,17 @@
     <div class="ss">Plantage Muidergracht · Amsterdam</div>
   </div>
 
+  <!-- MODE INDICATOR — always visible, sticky -->
+  <div id="mode-indicator">
+    <div id="mode-ind-bar" class="cur">
+      <div id="mode-ind-icon">⚠️</div>
+      <div id="mode-ind-text">
+        <div id="mode-ind-label">Current State</div>
+        <div id="mode-ind-sub">No interventions · sewer overloaded</div>
+      </div>
+    </div>
+  </div>
+
   <!-- VIEW TOGGLE -->
   <button id="view-toggle" class="vt-nudge" onclick="toggleViewMode()">
     <div class="vt-pip"></div>
@@ -671,27 +793,25 @@
 
   <!-- SYSTEM FLOW DIAGRAM (always visible) -->
   <div id="sys-flow">
-    <div class="sf-node sn-rain">
-      <div class="sf-icon">🌧</div>
-      <div class="sf-label">Rain<br>Input</div>
+    <div class="sf-row sn-rain">
+      <div class="sf-icon"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 17.58A5 5 0 0 0 18 8h-1.26A8 8 0 1 0 4 16.25"/><line x1="8" y1="19" x2="8" y2="21"/><line x1="12" y1="15" x2="12" y2="17"/><line x1="16" y1="19" x2="16" y2="21"/></svg></div>
+      <div class="sf-info"><div class="sf-label">Rain Input</div></div>
       <div class="sf-val" id="sf-mm">20 mm</div>
     </div>
-    <div class="sf-arrow">→</div>
-    <div class="sf-node sn-system" id="sf-sys-node">
-      <div class="sf-icon" id="sf-sys-icon">⚙️</div>
-      <div class="sf-label" id="sf-sys-label">Sewer<br>Only</div>
-      <div class="sf-val" id="sf-sys-val">No buffer</div>
+    <div class="sf-row sn-system" id="sf-sys-node">
+      <div class="sf-icon" id="sf-sys-icon">
+        <svg class="sfi-sewer" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        <svg class="sfi-filter" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+      </div>
+      <div class="sf-info"><div class="sf-label" id="sf-sys-label"><span id="sf-sys-l1">Sewer</span> <span id="sf-sys-l2">Only</span></div></div>
+      <div class="sf-val" id="sf-sys-val">Overloaded</div>
     </div>
-    <div class="sf-arrow">→</div>
-    <div class="sf-node sn-drain">
-      <div class="sf-icon">🏙</div>
-      <div class="sf-label">Ground<br>Drain</div>
-      <div class="sf-val" id="sf-drain-val">Overloaded</div>
+    <div class="sf-row sn-drain">
+      <div class="sf-icon"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/></svg></div>
+      <div class="sf-info"><div class="sf-label">Ground Output</div></div>
+      <div class="sf-val" id="sf-drain-val">Flooded</div>
     </div>
   </div>
-
-  <!-- CATEGORY: INPUT -->
-  <div class="sec-cat sc-input"><div class="cat-num">1</div>Input — Rainfall<div class="sec-cat-line"></div></div>
 
   <!-- SCENARIOS -->
   <div class="sec">
@@ -702,6 +822,15 @@
       <button class="scen-btn active" data-s="moderate" onclick="setScenario('moderate')"><span class="sl">Moderate</span><span class="sv">20 mm</span></button>
       <button class="scen-btn" data-s="heavy"    onclick="setScenario('heavy')">    <span class="sl">Heavy</span>    <span class="sv">40 mm</span></button>
       <button class="scen-btn" data-s="extreme"  onclick="setScenario('extreme')">  <span class="sl">Extreme</span> <span class="sv">70 mm</span></button>
+    </div>
+  </div>
+
+  <!-- MODE -->
+  <div class="sec">
+    <div class="lbl">Design Mode</div>
+    <div class="msw">
+      <button class="mb a-cur" id="mb-cur" onclick="setMode('current')">⚠ Current</button>
+      <button class="mb" id="mb-adp" onclick="setMode('adaptive')">✓ Adaptive</button>
     </div>
   </div>
 
@@ -724,18 +853,57 @@
     </div>
   </div>
 
-  <!-- CATEGORY: SYSTEM -->
-  <div class="sec-cat sc-system"><div class="cat-num">2</div>System — Drainage &amp; Storage<div class="sec-cat-line"></div></div>
-
-  <!-- MODE -->
-  <div class="sec">
-    <div class="lbl">Design Mode</div>
-    <div class="msw">
-      <button class="mb a-cur" id="mb-cur" onclick="setMode('current')">Current State</button>
-      <button class="mb" id="mb-adp" onclick="setMode('adaptive')">Adaptive (wadis)</button>
+  <!-- IMPACT SUMMARY -->
+  <div class="sec" id="impact-sb">
+    <div class="lbl">Impact — Plantage</div>
+    <div class="impact-grid">
+      <div class="ig-cell">
+        <div class="ip-val warn" id="ip-residents">~1,400</div>
+        <div class="ig-key">Residents</div>
+      </div>
+      <div class="ig-cell">
+        <div class="ip-val warn">264</div>
+        <div class="ig-key">At-risk bldgs</div>
+      </div>
+      <div class="ig-cell">
+        <div class="ip-val warnm" id="ip-roads">47</div>
+        <div class="ig-key">Roads blocked</div>
+      </div>
+      <div class="ig-cell">
+        <div class="ip-val warnm" id="ip-damage">€640K</div>
+        <div class="ig-key">Est. damage</div>
+      </div>
     </div>
-    <div class="mdesc" id="mdesc"><strong>Current state:</strong> no buffer measures. Sewer system overloaded during extreme rainfall.</div>
+    <div class="lbl" style="margin-bottom:4px">Critical Facilities</div>
+    <div id="cf-impact-list">
+      <div class="ip-facility"><div class="ip-facility-dot" style="background:#a78bfa"></div>Artis Royal Zoo</div>
+      <div class="ip-facility"><div class="ip-facility-dot" style="background:#ff5722"></div>Plantage school cluster (3)</div>
+      <div class="ip-facility"><div class="ip-facility-dot" style="background:#fbbf24"></div>Portugese Synagoge</div>
+      <div class="ip-facility"><div class="ip-facility-dot" style="background:#fb923c"></div>Hollandsche Schouwburg</div>
+    </div>
+    <div id="cf-alert-bar" style="display:none;margin-top:6px;padding:6px 8px;background:rgba(255,87,34,.1);border:1px solid rgba(255,87,34,.25);border-radius:5px;font-size:9px;color:#ff8a50;line-height:1.5"></div>
+    <div id="erm-status" style="display:none;margin-top:4px;padding:6px 8px;background:rgba(255,87,34,.08);border:1px solid rgba(255,87,34,.2);border-radius:5px;font-size:9px;color:#ff8a50;line-height:1.5"></div>
+    <div class="ip-row" style="padding-top:8px;border-top:1px solid var(--border);margin-top:6px;border-bottom:none">
+      <div class="ip-label" style="color:var(--lo);font-size:9px">2050 sea-level</div>
+      <div class="ip-val purple" style="font-size:11px">+53 cm</div>
+    </div>
   </div>
+
+  <!-- STATS -->
+  <div class="sec">
+    <div class="lbl">Live Stats</div>
+    <div class="sg">
+      <div class="sb2"><div class="sn w" id="st-dep">20 cm</div><div class="st2">Max depth</div></div>
+      <div class="sb2"><div class="sn w" id="st-hot">3</div><div class="st2">Bottlenecks</div></div>
+      <div class="sb2"><div class="sn g" id="st-wad">0</div><div class="st2">Interventions</div></div>
+      <div class="sb2"><div class="sn" id="st-risk">Moderate</div><div class="st2">Risk level</div></div>
+    </div>
+    <div class="sg" style="margin-top:5px">
+      <div class="sb2" style="border-color:rgba(255,87,34,.2)"><div class="sn w" style="font-size:15px">264</div><div class="st2">At-risk bldgs</div></div>
+      <div class="sb2" style="border-color:rgba(249,115,22,.2)"><div class="sn" style="color:#f97316;font-size:15px">117</div><div class="st2">Roads blocked</div></div>
+    </div>
+  </div>
+
 
   <!-- LAYERS (expert-only: hidden in simple view) -->
   <div class="sec expert-only">
@@ -755,27 +923,6 @@
       <div class="li on" id="lay-rain"       onclick="togLay('rain')">     <div class="lil"><div class="ld" style="background:#93c5fd"></div><div class="ln">Rain Animation</div></div><div class="tog"></div></div>
     </div>
     <div class="loading-bar" id="bld-loading"><div class="loading-dot"></div>Loading buildings from OpenStreetMap…</div>
-  </div>
-
-  <!-- CATEGORY: OUTPUT -->
-  <div class="sec-cat sc-output"><div class="cat-num">3</div>Output — Ground Impact<div class="sec-cat-line"></div></div>
-
-  <!-- STATS -->
-  <div class="sec">
-    <div class="lbl">Statistics</div>
-    <div class="sg">
-      <div class="sb2"><div class="sn w" id="st-dep">20 cm</div><div class="st2">Max depth</div></div>
-      <div class="sb2"><div class="sn w" id="st-hot">3</div><div class="st2">Bottlenecks</div></div>
-      <div class="sb2"><div class="sn g" id="st-wad">0</div><div class="st2">Wadis active</div></div>
-      <div class="sb2"><div class="sn" id="st-risk">Moderate</div><div class="st2">Risk status</div></div>
-    </div>
-    <!-- Real GIS stats -->
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-top:6px">
-      <div class="sb2" style="border-color:rgba(255,87,34,.2)"><div class="sn" style="color:#ff5722;font-size:14px">264</div><div class="st2">High-risk<br>buildings</div></div>
-      <div class="sb2" style="border-color:rgba(249,115,22,.2)"><div class="sn" style="color:#f97316;font-size:14px">117</div><div class="st2">Impassable<br>roads 90mm</div></div>
-      <div class="sb2" style="border-color:rgba(167,139,250,.2)"><div class="sn" style="color:#a78bfa;font-size:14px">70mm</div><div class="st2">BGT flood<br>simulation</div></div>
-    </div>
-    <div style="font-size:9px;color:var(--lo);margin-top:5px;line-height:1.4">Source: BGT_Risicogevels &amp; GOW_Begaanbaarheid — City of Amsterdam / Waternet, 22-02-2026</div>
   </div>
 
   <!-- HELOPHYTE FILTER INFO (expert-only) -->
@@ -822,7 +969,7 @@
   </div>
 
   <!-- LEGEND (expert-only) -->
-  <div class="sec expert-only" style="padding-bottom:18px">
+  <div class="sec expert-only">
     <div class="lbl">Legend — water depth</div>
     <div class="lramp"></div>
     <div class="lends"><span>None</span><span>Low</span><span>High</span><span>Critical</span></div>
@@ -903,42 +1050,6 @@
     </div>
   </div>
 
-  <!-- HUMAN IMPACT PANEL -->
-  <div id="impact-panel">
-    <div class="ip-title">Human Impact — Plantage</div>
-    <div class="ip-row">
-      <div class="ip-label">Residents in flood zone</div>
-      <div class="ip-val warn" id="ip-residents">4,800</div>
-    </div>
-    <div class="ip-row">
-      <div class="ip-label">High-risk buildings</div>
-      <div class="ip-val warn">264</div>
-    </div>
-    <div class="ip-row">
-      <div class="ip-label">Roads impassable</div>
-      <div class="ip-val warnm" id="ip-roads">117</div>
-    </div>
-    <div class="ip-row">
-      <div class="ip-label">Est. economic damage</div>
-      <div class="ip-val warnm" id="ip-damage">€2.4M</div>
-    </div>
-    <div class="ip-divider"></div>
-    <div style="font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--lo);margin-bottom:6px">Critical Facilities — OSM</div>
-    <div id="cf-impact-list">
-      <div class="ip-facility"><div class="ip-facility-dot" style="background:#a78bfa"></div>Artis Royal Zoo</div>
-      <div class="ip-facility"><div class="ip-facility-dot" style="background:#ff5722"></div>Plantage school cluster (3)</div>
-      <div class="ip-facility"><div class="ip-facility-dot" style="background:#fbbf24"></div>Portugese Synagoge</div>
-      <div class="ip-facility"><div class="ip-facility-dot" style="background:#fb923c"></div>Hollandsche Schouwburg</div>
-    </div>
-    <div id="cf-alert-bar" style="display:none;margin-top:7px;padding:7px 8px;background:rgba(255,87,34,.1);border:1px solid rgba(255,87,34,.25);border-radius:5px;font-size:9.5px;color:#ff8a50;line-height:1.5"></div>
-    <div id="erm-status" style="display:none;margin-top:5px;padding:7px 8px;background:rgba(255,87,34,.08);border:1px solid rgba(255,87,34,.2);border-radius:5px;font-size:9.5px;color:#ff8a50;line-height:1.5"></div>
-    <div class="ip-divider"></div>
-    <div class="ip-row" style="padding-top:2px">
-      <div class="ip-label" style="color:var(--lo);font-size:9px">2050 sea-level projection</div>
-      <div class="ip-val purple" style="font-size:11px">+53 cm</div>
-    </div>
-  </div>
-
   <!-- TOPBAR -->
   <div id="topbar">
     <div style="display:flex;gap:6px;align-items:flex-start">
@@ -950,7 +1061,7 @@
         Before / After
       </button>
     </div>
-    <div class="pill wp" id="badge">Scenario: <strong>Moderate — 20 mm/hr</strong></div>
+    <div class="pill wp" id="badge">Mode: <strong id="badge-strong">Current State — no interventions</strong></div>
   </div>
 
   <!-- TOUR PLAY BUTTON -->
@@ -993,6 +1104,8 @@
   </div>
 
   <div id="cbar">Lat <span id="clat">—</span> &nbsp; Lng <span id="clng">—</span> &nbsp; Depth ~<span id="cdep">— cm</span></div>
+
+  <!-- AREA MINI-MAP — UvA + Artis Zoo boundaries, clean yellow, no rain overlay -->
 </div>
 
 <script>
@@ -2742,19 +2855,43 @@ const GOW_BLOCKED_GJ = {"type":"FeatureCollection","features":[{"type":"Feature"
 // Polygon follows actual street/canal edges (clockwise):
 //   S: Mauritskade · SE: Sarphatistraat · E: Entrepotdok · N: Plantage canal · W: Singelgracht
 const STUDY_AREA_POLYGON = [
-  [4.9012, 52.3618], // SW — Weesperstraat × Mauritskade
-  [4.9098, 52.3608], // S  — Mauritskade east
-  [4.9170, 52.3613], // SE — Sarphatistraat south junction
-  [4.9222, 52.3628], // SE — Sarphatistraat east end
-  [4.9256, 52.3658], // E  — Entrepotdok east corner
-  [4.9252, 52.3706], // NE — Entrepotdok north turning
-  [4.9212, 52.3752], // N  — Plantage canal east
-  [4.9125, 52.3760], // N  — Artis north wall
-  [4.9063, 52.3742], // NW — Plantage Muidergracht west end
-  [4.9018, 52.3708], // W  — Singelgracht south
-  [4.9012, 52.3658], // W  — Singelgracht
-  [4.9012, 52.3618], // close
+  [4.90807, 52.36133],
+  [4.91666, 52.36291],
+  [4.92195, 52.36385],
+  [4.92420, 52.36609],
+  [4.92590, 52.36618],
+  [4.91518, 52.36802],
+  [4.91017, 52.36920],
+  [4.90904, 52.36807],
+  [4.90520, 52.36609],
+  [4.90807, 52.36133],
 ];
+
+// Artis/Plantage rain-accumulation zone — user-supplied + extended coords
+// Extended E to include Entrepotdok; respects Kadijken/Mauritskade boundaries
+const ARTIS_AREA_POLYGON = [
+  [4.90807, 52.36133], // SW  — exact coordinate
+  [4.91666, 52.36291], // S   — exact coordinate
+  [4.92195, 52.36385], // SE  — exact coordinate
+  [4.92420, 52.36609], // E   — extended east to include small notch area
+  [4.92590, 52.36618], // E-peak (easternmost bulge) — exact coordinate
+  [4.91518, 52.36802], // NNE — exact coordinate
+  [4.91017, 52.36920], // N   — exact coordinate (northernmost)
+  [4.90904, 52.36807], // NW  — exact coordinate
+  [4.90520, 52.36609], // W   — exact coordinate (westernmost)
+  [4.90807, 52.36133], // close
+];
+
+function pointInPolygon(lng, lat, polygon) {
+  let inside = false;
+  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+    const xi = polygon[i][0], yi = polygon[i][1];
+    const xj = polygon[j][0], yj = polygon[j][1];
+    if ((yi > lat) !== (yj > lat) && lng < (xj - xi) * (lat - yi) / (yj - yi) + xi)
+      inside = !inside;
+  }
+  return inside;
+}
 
 // ── HEX GRID GENERATION — bw70/bw90 from Waternet GeoTIFF (1,526 real nodes) ──────
 const LAT_PER_M = 1 / 111000;
@@ -2782,21 +2919,31 @@ function gaussWeight(lng, lat, use90) {
     const dy = (lat - n[1]) / (RL * 8);
     w = Math.max(w, n[use90 ? 3 : 2] * Math.exp(-(dx*dx + dy*dy)));
   }
-  const inArtis = lng > 4.909 && lng < 4.925 && lat > 52.362 && lat < 52.372;
-  return Math.min(1, inArtis ? Math.max(w, 0.08) : w * 0.6);
+  const inArea = pointInPolygon(lng, lat, ARTIS_AREA_POLYGON);
+  // Inside polygon: high floor so entire area fills solidly with blue grid.
+  // Outside: zero — no hexagons rendered beyond boundary.
+  return inArea ? Math.min(1, Math.max(w, 0.72)) : 0;
 }
 
 function buildHexGrid() {
   const feats = [];
-  const CX = 4.9163, CY = 52.3664;
-  const COLS = 28, ROWS = 22;
+  // Centre on the expanded ARTIS_AREA_POLYGON bounding box
+  const CX = (4.90520 + 4.92590) / 2; // 4.91555 — exact W to E-peak midpoint
+  const CY = (52.36133 + 52.36920) / 2; // 52.36527 — exact S to N midpoint
+  const COLS = 52, ROWS = 30;
   const DX = RW * 1.5, DY = RL * Math.sqrt(3);
+
+  // Bounding box derived from exact user-measured coordinates
+  const BB_LNG_MIN = 4.903, BB_LNG_MAX = 4.928;
+  const BB_LAT_MIN = 52.360, BB_LAT_MAX = 52.371;
 
   for (let c = -COLS/2; c <= COLS/2; c++) {
     for (let r = -ROWS/2; r <= ROWS/2; r++) {
       const cx = CX + c * DX;
       const cy = CY + r * DY + (c % 2 === 0 ? 0 : DY / 2);
-      if (cx < 4.903 || cx > 4.930 || cy < 52.361 || cy > 52.374) continue;
+      // Fast bbox cull first, then polygon test
+      if (cx < BB_LNG_MIN || cx > BB_LNG_MAX || cy < BB_LAT_MIN || cy > BB_LAT_MAX) continue;
+      if (!pointInPolygon(cx, cy, ARTIS_AREA_POLYGON)) continue;
       feats.push({
         type: 'Feature',
         geometry: { type: 'Polygon', coordinates: [hexVerts(cx, cy)] },
@@ -2839,6 +2986,8 @@ const layState = { water: true, buildings: true, flow: true, bottleneck: true, w
 map.on('load', () => {
   layersLoaded = true;
   addStudyAreaLayer();
+  addArtisAreaLayer();
+  addInstitutionBoundaries();
   addWaterLayer();
   addFlowLayer();
   addHelophyteLayer();
@@ -2869,6 +3018,7 @@ map.on('load', () => {
 
 // ── STUDY AREA BOUNDARY LAYER ──────────────────────────────────────
 function addStudyAreaLayer() {
+  // Source kept for reference; no visible layers — artis-area-line is the sole boundary
   map.addSource('study-area', {
     type: 'geojson',
     data: {
@@ -2877,21 +3027,34 @@ function addStudyAreaLayer() {
       geometry: { type: 'Polygon', coordinates: [STUDY_AREA_POLYGON] }
     }
   });
-  map.addLayer({
-    id: 'study-area-fill',
-    type: 'fill',
-    source: 'study-area',
-    paint: { 'fill-color': 'rgba(0,188,212,0.025)', 'fill-opacity': 1 }
+}
+
+// ── ARTIS AREA BOUNDARY LAYER (user-supplied coords) ──────────────
+function addArtisAreaLayer() {
+  map.addSource('artis-area', {
+    type: 'geojson',
+    data: {
+      type: 'Feature',
+      properties: { name: 'Artis/Plantage Rain Zone' },
+      geometry: { type: 'Polygon', coordinates: [ARTIS_AREA_POLYGON] }
+    }
   });
   map.addLayer({
-    id: 'study-area-line',
+    id: 'artis-area-fill',
+    type: 'fill',
+    source: 'artis-area',
+    paint: { 'fill-color': 'rgba(0,120,200,0.04)', 'fill-opacity': 1 }
+  }, 'hex-water');
+  // Boundary line kept very subtle — hex grid edge is the visual boundary
+  map.addLayer({
+    id: 'artis-area-line',
     type: 'line',
-    source: 'study-area',
+    source: 'artis-area',
     paint: {
-      'line-color': 'rgba(0,188,212,0.55)',
-      'line-width': 1.8,
-      'line-dasharray': [5, 4],
-      'line-opacity': 0.75,
+      'line-color': 'rgba(0,188,212,0.35)',
+      'line-width': 1,
+      'line-dasharray': [4, 5],
+      'line-opacity': 0.35,
     }
   });
 }
@@ -2957,7 +3120,18 @@ function addHelophyteLayer() {
     id: 'helofilter-fill', type: 'fill', source: 'helofilter',
     paint: {
       'fill-color': '#22c55e',
-      'fill-opacity': 0.28,
+      'fill-opacity': 0.22,
+    }
+  });
+
+  // Glow halo (wide, blurred) — intensified in adaptive mode
+  map.addLayer({
+    id: 'helofilter-glow', type: 'line', source: 'helofilter',
+    paint: {
+      'line-color': '#4ade80',
+      'line-width': 0,
+      'line-opacity': 0,
+      'line-blur': 8,
     }
   });
 
@@ -2967,7 +3141,7 @@ function addHelophyteLayer() {
     paint: {
       'line-color': '#4ade80',
       'line-width': 1.5,
-      'line-opacity': 0.7,
+      'line-opacity': 0.55,
       'line-dasharray': [3,2],
     }
   });
@@ -2997,6 +3171,77 @@ function addHelophyteLayer() {
 
   map.on('mouseenter', 'helofilter-fill', () => { map.getCanvas().style.cursor = 'pointer'; });
   map.on('mouseleave', 'helofilter-fill', () => { map.getCanvas().style.cursor = ''; });
+}
+
+// ── ARTIS ZOO + UvA — yellow hex-cluster highlights at exact coordinates ─────
+function addInstitutionBoundaries() {
+  // Single flat-top hexagon at 50 m radius — one clean formal shape per institution
+  function singleHex(lng, lat, radiusM) {
+    const rLat = radiusM / 111000;
+    const rLng = radiusM / (111000 * Math.cos(52.366 * Math.PI / 180));
+    const verts = [];
+    for (let i = 0; i < 6; i++) {
+      const a = (Math.PI / 3) * i;
+      verts.push([lng + rLng * Math.cos(a), lat + rLat * Math.sin(a)]);
+    }
+    verts.push([...verts[0]]);
+    return [{ type: 'Feature', geometry: { type: 'Polygon', coordinates: [verts] }, properties: {} }];
+  }
+
+  const ARTIS_LNG = 4.9165,    ARTIS_LAT = 52.3660;
+  const UVA_LNG   = 4.9113292, UVA_LAT   = 52.3638303;
+
+  map.addSource('artis-zone', {
+    type: 'geojson',
+    data: { type: 'FeatureCollection', features: singleHex(ARTIS_LNG, ARTIS_LAT, 50) }
+  });
+  map.addSource('uva-zone', {
+    type: 'geojson',
+    data: { type: 'FeatureCollection', features: singleHex(UVA_LNG, UVA_LAT, 50) }
+  });
+
+  // Subtle amber fill — warms the area without drowning the hex grid beneath
+  map.addLayer({ id: 'artis-zone-fill', type: 'fill', source: 'artis-zone',
+    paint: { 'fill-color': '#f59e0b', 'fill-opacity': 0.13 } });
+  // Crisp full-opacity amber border — the primary visual signal
+  map.addLayer({ id: 'artis-zone-line', type: 'line', source: 'artis-zone',
+    paint: { 'line-color': '#f59e0b', 'line-width': 2.2, 'line-opacity': 1 } });
+
+  map.addLayer({ id: 'uva-zone-fill', type: 'fill', source: 'uva-zone',
+    paint: { 'fill-color': '#f59e0b', 'fill-opacity': 0.13 } });
+  map.addLayer({ id: 'uva-zone-line', type: 'line', source: 'uva-zone',
+    paint: { 'line-color': '#f59e0b', 'line-width': 2.2, 'line-opacity': 1 } });
+
+  // Small amber dot at exact coordinate — no text label
+  function addCrosshair(lng, lat) {
+    const el = document.createElement('div');
+    el.style.cssText = 'width:7px;height:7px;border-radius:50%;background:#f59e0b;box-shadow:0 0 0 2px rgba(245,158,11,0.5),0 0 10px 3px rgba(245,158,11,0.3);pointer-events:none;';
+    new maplibregl.Marker({ element: el, anchor: 'center' }).setLngLat([lng, lat]).addTo(map);
+  }
+
+  addCrosshair(ARTIS_LNG, ARTIS_LAT);
+  addCrosshair(UVA_LNG,   UVA_LAT);
+
+  // Click popup — Artis Zoo
+  map.on('click', 'artis-zone-fill', e => {
+    new maplibregl.Popup({ className: 'wdpop', closeButton: true, offset: 6, maxWidth: '220px' })
+      .setLngLat(e.lngLat)
+      .setHTML('<div style="font-family:\'Space Grotesk\',sans-serif;padding:12px"><div style="font-size:8px;font-weight:700;color:#f59e0b;text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px">Artis Royal Zoo</div><div style="font-size:11px;color:#d8edf4;margin-bottom:5px">Founded 1838 · 9 ha</div><div style="font-size:10px;color:#5f96af;line-height:1.5">Within the 70 mm/hr BGT flood zone. At extreme rainfall, Plantage Kerklaan and zoo access routes become impassable.</div></div>')
+      .addTo(map);
+  });
+
+  // Click popup — UvA
+  map.on('click', 'uva-zone-fill', e => {
+    new maplibregl.Popup({ className: 'wdpop', closeButton: true, offset: 6, maxWidth: '220px' })
+      .setLngLat(e.lngLat)
+      .setHTML('<div style="font-family:\'Space Grotesk\',sans-serif;padding:12px"><div style="font-size:8px;font-weight:700;color:#f59e0b;text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px">UvA · Roeterseiland</div><div style="font-size:11px;color:#d8edf4;margin-bottom:5px">Universiteit van Amsterdam</div><div style="font-size:10px;color:#5f96af;line-height:1.5">Southern edge of the Plantage flood zone. Campus access affected during heavy rainfall events.</div></div>')
+      .addTo(map);
+  });
+
+  map.on('mouseenter', 'artis-zone-fill', () => { map.getCanvas().style.cursor = 'pointer'; });
+  map.on('mouseleave', 'artis-zone-fill', () => { map.getCanvas().style.cursor = ''; });
+  map.on('mouseenter', 'uva-zone-fill', () => { map.getCanvas().style.cursor = 'pointer'; });
+  map.on('mouseleave', 'uva-zone-fill', () => { map.getCanvas().style.cursor = ''; });
 }
 
 // ── DUTCH FLOWER STRAIT LAYER ────────────────────────────────────
@@ -4033,24 +4278,24 @@ function toggleViewMode() {
 
 // ── SYSTEM FLOW DIAGRAM UPDATE ────────────────────────────────────
 function updateSysFlow(mm, mode) {
-  const elMm   = document.getElementById('sf-mm');
-  const elSys  = document.getElementById('sf-sys-node');
-  const elIcon = document.getElementById('sf-sys-icon');
-  const elLbl  = document.getElementById('sf-sys-label');
-  const elVal  = document.getElementById('sf-sys-val');
-  const elDrn  = document.getElementById('sf-drain-val');
+  const elMm  = document.getElementById('sf-mm');
+  const elSys = document.getElementById('sf-sys-node');
+  const elL1  = document.getElementById('sf-sys-l1');
+  const elL2  = document.getElementById('sf-sys-l2');
+  const elVal = document.getElementById('sf-sys-val');
+  const elDrn = document.getElementById('sf-drain-val');
   if (!elMm) return;
   elMm.textContent = mm + ' mm';
   if (mode === 'adaptive') {
     elSys.classList.add('sf-adaptive');
-    elIcon.textContent = '🌿';
-    elLbl.innerHTML    = 'Filter +<br>Storage';
-    elVal.textContent  = '45% cut';
+    elL1.textContent = 'Filter +';
+    elL2.textContent = 'Storage';
+    elVal.textContent = '45% cut';
   } else {
     elSys.classList.remove('sf-adaptive');
-    elIcon.textContent = '⚙️';
-    elLbl.innerHTML    = 'Sewer<br>Only';
-    elVal.textContent  = mm > 15 ? 'Overloaded' : 'Normal';
+    elL1.textContent = 'Sewer';
+    elL2.textContent = 'Only';
+    elVal.textContent = mm > 15 ? 'Overloaded' : 'Normal';
   }
   if (elDrn) elDrn.textContent = mm === 0 ? 'Dry' : mm <= 5 ? 'Normal' : mm <= 20 ? 'Strained' : 'Flooded';
 }
@@ -4116,15 +4361,65 @@ function updateDepthUI(v) {
 }
 
 // ── MODE SWITCH ───────────────────────────────────────────────────
+function triggerAdaptiveFireworks() {
+  const bar = document.getElementById('mode-ind-bar');
+  if (!bar) return;
+  bar.classList.add('adp-spark');
+  setTimeout(() => bar.classList.remove('adp-spark'), 650);
+
+  const colors = ['#26c685','#4ade80','#00bcd4','#a78bfa','#86efac','#6ee7b7','#fbbf24','#34d399'];
+  const rect = bar.getBoundingClientRect();
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top + rect.height / 2;
+
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:99999;';
+  document.body.appendChild(wrap);
+
+  const count = 56;
+  for (let i = 0; i < count; i++) {
+    const angle = (i / count) * 360 + (Math.random() - 0.5) * (360 / count) * 1.5;
+    const dist  = 70 + Math.random() * 200;
+    const size  = 3 + Math.random() * 5;
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    const delay = Math.random() * 160;
+    const dur   = 650 + Math.random() * 450;
+    const rad   = angle * Math.PI / 180;
+    const p = document.createElement('div');
+    p.style.cssText = `position:absolute;width:${size}px;height:${size}px;border-radius:50%;background:${color};box-shadow:0 0 ${size*2.5}px ${color};left:${cx}px;top:${cy}px;margin-left:-${size/2}px;margin-top:-${size/2}px;--fx:${(Math.cos(rad)*dist).toFixed(1)}px;--fy:${(Math.sin(rad)*dist).toFixed(1)}px;animation:fw-fly ${dur}ms ease-out ${delay}ms forwards;`;
+    wrap.appendChild(p);
+  }
+
+  for (let r = 0; r < 3; r++) {
+    const ring = document.createElement('div');
+    ring.style.cssText = `position:absolute;width:${rect.width}px;height:${rect.height}px;left:${rect.left}px;top:${rect.top}px;border-radius:8px;border:2px solid rgba(38,198,133,${0.8-r*0.22});--fx:0px;--fy:0px;animation:adp-ring 0.75s ease-out ${r*110}ms forwards;`;
+    wrap.appendChild(ring);
+  }
+
+  setTimeout(() => wrap.remove(), 1400);
+}
+
 function setMode(m) {
   currentMode = m;
   document.getElementById('mb-cur').className = 'mb' + (m==='current'?' a-cur':'');
   document.getElementById('mb-adp').className = 'mb' + (m==='adaptive'?' a-adp':'');
-  const msgs = {
-    current:  '<strong>Current state:</strong> no buffer measures. Plantage Middenlaan/Kerklaan sewer overloaded at >15 mm/hr (Waternet report). 2036 policy limit: 70 cm.',
-    adaptive: '<strong>Helophyte Filter + BlueBloqs:</strong> 4,000 m² filter along Entrepotdok · 1,400 m³ retention · 45% peak reduction. Galingale + reed purify Artis ponds, Kerklaan stormwater.',
-  };
-  document.getElementById('mdesc').innerHTML = msgs[m];
+
+  // Sticky mode indicator (prominent, always visible)
+  const indBar   = document.getElementById('mode-ind-bar');
+  const indIcon  = document.getElementById('mode-ind-icon');
+  const indLabel = document.getElementById('mode-ind-label');
+  const indSub   = document.getElementById('mode-ind-sub');
+  if (indBar && indIcon && indLabel && indSub) {
+    indBar.className   = m === 'adaptive' ? 'adp' : 'cur';
+    indIcon.textContent = m === 'adaptive' ? '🌿' : '⚠️';
+    indLabel.textContent = m === 'adaptive' ? 'Adaptive Mode' : 'Current State';
+    indSub.textContent   = m === 'adaptive' ? '45% reduction · filter active' : 'No interventions · sewer overloaded';
+  }
+
+  // Wadi markers — glow in adaptive mode
+  document.querySelectorAll('.wdm').forEach(el => {
+    el.classList.toggle('wdm-lit', m === 'adaptive');
+  });
 
   const wn = document.getElementById('st-wad');
   wn.textContent = m === 'adaptive' ? '3' : '0';  // HF Entrepotdok + BlueBloqs + Kerklaan 3e filter
@@ -4135,17 +4430,24 @@ function setMode(m) {
 
   const badge = document.getElementById('badge');
   badge.className = m === 'adaptive' ? 'pill gp' : 'pill wp';
-  badge.innerHTML = m === 'adaptive'
-    ? `Mode: <strong>Helophyte Filter + BlueBloqs active</strong>`
-    : `Mode: <strong>Current State — no interventions</strong>`;
+  document.getElementById('badge-strong').textContent = m === 'adaptive'
+    ? 'Helophyte Filter + BlueBloqs active'
+    : 'Current State — no interventions';
 
   // Visual feedback: pulse helophyte filter layer in adaptive mode
   if (layersLoaded && map.getLayer('helofilter-fill')) {
-    map.setPaintProperty('helofilter-fill', 'fill-opacity', m === 'adaptive' ? 0.48 : 0.22);
-    map.setPaintProperty('helofilter-line', 'line-opacity', m === 'adaptive' ? 1.0 : 0.7);
-    map.setPaintProperty('helofilter-line', 'line-width',   m === 'adaptive' ? 2.5 : 1.5);
+    map.setPaintProperty('helofilter-fill', 'fill-opacity', m === 'adaptive' ? 0.68 : 0.18);
+    map.setPaintProperty('helofilter-fill', 'fill-color',   m === 'adaptive' ? '#22c55e' : 'rgba(74,222,128,0.5)');
+    map.setPaintProperty('helofilter-line', 'line-opacity', m === 'adaptive' ? 1.0 : 0.45);
+    map.setPaintProperty('helofilter-line', 'line-width',   m === 'adaptive' ? 4.0 : 1.5);
+    map.setPaintProperty('helofilter-line', 'line-blur',    m === 'adaptive' ? 2.0 : 0);
+  }
+  if (layersLoaded && map.getLayer('helofilter-glow')) {
+    map.setPaintProperty('helofilter-glow', 'line-opacity', m === 'adaptive' ? 0.55 : 0);
+    map.setPaintProperty('helofilter-glow', 'line-width',   m === 'adaptive' ? 12 : 0);
   }
   updateSysFlow(SCENARIOS[currentScenario].mm, m);
+  if (m === 'adaptive') triggerAdaptiveFireworks();
 }
 
 // ── LAYER TOGGLES ─────────────────────────────────────────────────
@@ -4156,7 +4458,7 @@ const LAYER_IDS = {
   bottleneck:  [], // HTML markers
   wadis:       [], // HTML markers
   flowers:     ['flowers-stem','flowers-line','flowers-glow','flowers-circles','flowers-symbols'],
-  helofilter:  ['helofilter-fill','helofilter-line'],
+  helofilter:  ['helofilter-fill','helofilter-glow','helofilter-line'],
   risk:        ['bgt-risk-fill','bgt-risk-outline'],    // BGT risicogebouwen 70mm
   blocked:     ['gow-blocked-fill','gow-blocked-line'],  // GOW onbegaanbaar 90mm
   routes:      ['erm-routes-passable','erm-routes-warning','erm-routes-blocked','erm-arrows'],
